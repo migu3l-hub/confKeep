@@ -22,12 +22,10 @@ function obtener_ips(){
 	    ip_mercurio=$(ifconfig enp0s8 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
 	    echo "tierra: $ip_tierra, mercurio: $ip_mercurio"
   done
-
-	exit;
-	#despliegue_keepalived $ip_tierra $ip_mercurio
+	despliegue_keepalived $ip_tierra $ip_mercurio
 }
 
-function despligue_keepalived(){
+function despliegue_keepalived(){
 	docker run -d --name keepalived --restart=always \
   		--cap-add=NET_ADMIN --cap-add=NET_BROADCAST --cap-add=NET_RAW --net=host \
   		-e KEEPALIVED_INTERFACE=enp0s20u1 \
