@@ -1,15 +1,29 @@
 #!/usr/bin/env bash
 
-#!/bin/bash
+function keepalived_is_active(){
+  KEP=""
+  until [ "$KEP" != "" ]; do
+      KEP=$(docker ps -qf name=keepalived)
+      echo "En espera de keepalived.."
+      sleep 5
+  done
+}
 
 function quitar_keepalived(){
+  echo "keepalived esta activo, eliminando..."
+  sleep 5
 	docker rm keepalived --force
 }
 
 function obtener_ips(){
-	ip_mercurio=$(ssh root@192.168.88.56 ifconfig eno1 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
-	ip_tierra=$(ifconfig eno1 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
-	echo "tierra: $ip_tierra, mercurio: $ip_mercurio"
+  ip_tierra=""
+  ip_mercurio=""
+  until [ "$ip_tierra" != "" ] && [ "$ip_mercurio" != "" ]; do
+      ip_tierra=$(ssh root@192.168.88.4 ifconfig enp0s8 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
+	    ip_mercurio=$(ifconfig enp0s8 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
+	    echo "tierra: $ip_tierra, mercurio: $ip_mercurio"
+  done
+
 	exit;
 	#despliegue_keepalived $ip_tierra $ip_mercurio
 }
@@ -20,21 +34,21 @@ function despligue_keepalived(){
   		-e KEEPALIVED_INTERFACE=enp0s20u1 \
   		-e KEEPALIVED_UNICAST_PEERS="#PYTHON2BASH:[$1,$2]" \
   		-e KEEPALIVED_VIRTUAL_IPS=148.226.80.34 \
-  		-e KEEPALIVED_PRIORITY=100 \
+  		-e KEEPALIVED_PRIORITY=200 \
   		osixia/keepalived
 	exit;
 }
 
-function comprobar(){
-	while $True; do
-		ping -c 1 192.168.88.56 >/dev/null && obtener_ips
-		sleep 10
-	done
-}
+
 
 function main(){
-	#quitar_keepalived
-	comprobar
+  sleep 60
+  keepalived_is_active
+	quitar_keepalived
+  obtener_ips
 }
+
+sleep 50
+dhclient enp0s8
 
 main

@@ -1,13 +1,28 @@
 #!/usr/bin/env bash
 
+function keepalived_is_active(){
+  KEP=""
+  until [ "$KEP" != "" ]; do
+      KEP=$(docker ps -qf name=keepalived)
+      echo "En espera de keepalived.."
+      sleep 5
+  done
+}
+
 function quitar_keepalived(){
+  echo "keepalived esta activo, eliminando..."
 	docker rm keepalived --force
 }
 
 function obtener_ips(){
-	ip_tierra=$(ssh root@192.168.88.55 ifconfig eno1 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
-	ip_mercurio=$(ifconfig eno1 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
-	echo "tierra: $ip_tierra, mercurio: $ip_mercurio"
+  ip_tierra=""
+  ip_mercurio=""
+  until [ "$ip_tierra" != "" ] && [ "$ip_mercurio" != "" ]; do
+      ip_tierra=$(ssh root@192.168.88.5 ifconfig enp0s8 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
+	    ip_mercurio=$(ifconfig enp0s8 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
+	    echo "tierra: $ip_tierra, mercurio: $ip_mercurio"
+  done
+
 	exit;
 	#despliegue_keepalived $ip_tierra $ip_mercurio
 }
@@ -23,17 +38,13 @@ function despligue_keepalived(){
 	exit;
 }
 
-function comprobar(){
-	while $True; do
-		ping -c 1 192.168.88.55 >/dev/null && obtener_ips
-		sleep 10
-	done
-}
+
 
 function main(){
-  sleep 70
-	#quitar_keepalived
-	comprobar
+  sleep 60
+  keepalived_is_active
+	quitar_keepalived
+  obtener_ips
 }
 
 sleep 50
