@@ -38,6 +38,10 @@ function despliegue_keepalived(){
 	exit;
 }
 
+function configurarInterfaces() {
+    
+}
+
 
 
 function main(){

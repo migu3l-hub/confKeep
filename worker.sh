@@ -2,9 +2,11 @@
 
 function keepalived_is_active(){
   KEP=""
-  until [ "$KEP" != "" ]; do
+  CONT=0
+  until [ "$KEP" != "" ] || [ $CONT -eq 10 ]; do
       KEP=$(docker ps -qf name=keepalived)
       echo "En espera de keepalived.."
+      let $CONT=$CONT+1
       sleep 5
   done
 }
