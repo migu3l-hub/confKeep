@@ -39,7 +39,7 @@ function despliegue_keepalived(){
 }
 
 function configurarInterfaces() {
-    
+    echo "hola"
 }
 
 
