@@ -9,7 +9,7 @@ function keepalived_is_active(){
       let $CONT=$CONT+1
       sleep 5
   done
-  if [ $CONT -lt 10 ]; then
+  if [ "$KEP" != "" ]; then
       echo "keepalived esta activo, eliminando..."
 	    docker rm keepalived --force
   fi
@@ -31,7 +31,7 @@ function despliegue_keepalived(){
   		--cap-add=NET_ADMIN --cap-add=NET_BROADCAST --cap-add=NET_RAW --net=host \
   		-e KEEPALIVED_INTERFACE=enp0s20u1 \
   		-e KEEPALIVED_UNICAST_PEERS="#PYTHON2BASH:[$1,$2]" \
-  		-e KEEPALIVED_VIRTUAL_IPS=148.226.80.34 \
+  		-e KEEPALIVED_VIRTUAL_IPS=192.168.1.100 \
   		-e KEEPALIVED_PRIORITY=200 \
   		osixia/keepalived
 	exit;
