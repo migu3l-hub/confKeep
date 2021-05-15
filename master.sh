@@ -9,11 +9,10 @@ function keepalived_is_active(){
       let $CONT=$CONT+1
       sleep 5
   done
-}
-
-function quitar_keepalived(){
-  echo "keepalived esta activo, eliminando..."
-	docker rm keepalived --force
+  if [ $CONT -lt 10 ]; then
+      echo "keepalived esta activo, eliminando..."
+	    docker rm keepalived --force
+  fi
 }
 
 function obtener_ips(){
@@ -39,19 +38,29 @@ function despliegue_keepalived(){
 }
 
 function configurarInterfaces() {
-    echo "hola"
+  INTERFACE1=0
+  INTERFACE2=0
+  CONT=0
+  until [ $INTERFACE1 -eq 1 ] && [ $INTERFACE2 -eq 1 ] || [ $CONT -eq 15 ]; do
+      dhclient -v enp0s1
+      sleep 10
+      dhclient -v enp0s8
+      INTERFACE1=$(ip addr show dev enp0s8 | grep -c 192.168.1.82/24)
+      INTERFACE2=$(ip addr show dev enp0s1 | grep -c 192.168.88.5)
+      let $CONT=$CONT+1
+      sleep 10
+  done
+  # Si el contador llega a 15 se podrian apagar y volver a encender las ineterfaces por si algo paso
 }
 
 
 
 function main(){
-  sleep 60
+  sleep 80
   keepalived_is_active
-	quitar_keepalived
+	configurarInterfaces
   obtener_ips
 }
 
 sleep 50
-dhclient enp0s8
-
 main

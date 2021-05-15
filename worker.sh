@@ -9,13 +9,12 @@ function keepalived_is_active(){
       let $CONT=$CONT+1
       sleep 5
   done
+  if [ $CONT -lt 10 ]; then
+      echo "keepalived esta activo, eliminando..."
+	    docker rm keepalived --force
+  fi
 }
 
-function quitar_keepalived(){
-  echo "keepalived esta activo, eliminando..."
-  sleep 5
-	docker rm keepalived --force
-}
 
 function obtener_ips(){
   ip_tierra=""
@@ -40,15 +39,28 @@ function despliegue_keepalived(){
 }
 
 
+function configurarInterfaces() {
+  INTERFACE1=""
+  INTERFACE2=0
+  CONT=0
+  until [ $INTERFACE1 != "" ] && [ $INTERFACE2 -eq 1 ] || [ $CONT -eq 15 ]; do
+      dhclient -v enp0s3
+      sleep 10
+      dhclient -v enp0s8
+      INTERFACE1=$(ifconfig enp0s8 | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'| head -n 1)
+      INTERFACE2=$(ip addr show dev enp0s3 | grep -c 192.168.88.5)
+      let $CONT=$CONT+1
+      sleep 10
+  done
+}
+
 
 function main(){
-  sleep 60
+  sleep 80
   keepalived_is_active
-	quitar_keepalived
+  configurarInterfaces
   obtener_ips
 }
 
 sleep 50
-dhclient enp0s8
-
 main
