@@ -62,5 +62,5 @@ function main(){
   obtener_ips
 }
 
-sleep 50
+sleep 100
 main
