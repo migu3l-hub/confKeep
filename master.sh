@@ -4,9 +4,9 @@ function keepalived_is_active(){
   KEP=""
   CONT=0
   until [ "$KEP" != "" ] || [ $CONT -eq 10 ]; do
-      KEP=$(docker ps -qf name=keepalived)
+      KEP=$(docker ps -aqf name=keepalived)
       echo "En espera de keepalived.."
-      let $CONT=$CONT+1
+      let CONT=CONT+1
       sleep 5
   done
   if [ "$KEP" != "" ]; then
@@ -14,6 +14,7 @@ function keepalived_is_active(){
 	    docker rm keepalived --force
   fi
 }
+
 
 function obtener_ips(){
   ip_tierra=""
@@ -40,17 +41,17 @@ function despliegue_keepalived(){
 function configurarInterfaces() {
   INTERFACE1=0
   INTERFACE2=0
-  CONT=0
+  CONTA=0
   until [ $INTERFACE1 -eq 1 ] && [ $INTERFACE2 -eq 1 ] || [ $CONT -eq 15 ]; do
-      dhclient -v enp0s1
+      dhclient -v enp0s3
       sleep 10
       dhclient -v enp0s8
       INTERFACE1=$(ip addr show dev enp0s8 | grep -c 192.168.1.82/24)
-      INTERFACE2=$(ip addr show dev enp0s1 | grep -c 192.168.88.5)
-      let $CONT=$CONT+1
+      INTERFACE2=$(ip addr show dev enp0s3 | grep -c 192.168.88.5)
+      let CONTA=CONTA+1
       sleep 10
   done
-  # Si el contador llega a 15 se podrian apagar y volver a encender las ineterfaces por si algo paso
+  # AQUI SE DEBE AGREGAR EL QUITAR LA IP DE MERCURIO
 }
 
 
